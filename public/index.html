@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ping Pong Score Counter</title>
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+
+      .score-container {
+        display: flex;
+        height: 100vh;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .score-box {
+        flex: 1;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        font-size: 22rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .score-box span {
+        z-index: 1;
+      }
+
+      .green {
+        background-color: #a1eebd;
+      }
+
+      .blue {
+        background-color: #7bd3ea;
+      }
+
+      .serving::before {
+        content: "🏓";
+        position: absolute;
+        opacity: 0.3;
+        bottom: 0;
+      }
+
+      .won::after {
+        content: "👑";
+        position: absolute;
+        opacity: 1;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="score-container" id="game">
+      <div class="score-box green" id="player1"><span>0</span></div>
+      <div class="score-box blue" id="player2"><span>0</span></div>
+    </div>
+
+    <script type="module">
+      import { io } from "https://cdn.socket.io/4.7.3/socket.io.esm.min.js";
+
+      const socket = io.connect("http://localhost:3000");
+
+      socket.on("state", (state) => {
+        console.log("state", state);
+
+        if (state.serving === "player2") {
+          document.getElementById("player1").classList.remove("serving");
+          document.getElementById("player2").classList.add("serving");
+        } else {
+          document.getElementById("player2").classList.remove("serving");
+          document.getElementById("player1").classList.add("serving");
+        }
+
+        document.getElementById("player1").innerHTML =
+          `<span>${state.player1}</span>`;
+        document.getElementById("player2").innerHTML =
+          `<span>${state.player2}</span>`;
+
+        if (state.gameOver) {
+          document.getElementById(state.winner).classList.add("won");
+          document.getElementById(state.winner).classList.remove("serving");
+        }
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected from the server");
+      });
+    </script>
+  </body>
+</html>

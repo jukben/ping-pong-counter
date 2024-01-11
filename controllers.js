@@ -14,9 +14,9 @@ function createControllers() {
     ),
   ];
 
-  //   if (hamaDevices.length < 2) {
-  //     throw new Error("Not enough controllers connected");
-  //   }
+  if (hamaDevices.length < 2) {
+    throw new Error("Not enough controllers connected");
+  }
 
   hamaDevices.forEach((device) => {
     const hid = new HID.HID(device);

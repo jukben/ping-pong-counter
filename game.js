@@ -37,7 +37,7 @@ export function createGame() {
     }
 
     if (
-      Math.max(score[player1], score[player2]) === 11 &&
+      Math.max(score[player1], score[player2]) >= 11 &&
       Math.abs(score[player1] - score[player2]) >= 2
     ) {
       gameOver = true;

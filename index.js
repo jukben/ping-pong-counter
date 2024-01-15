@@ -51,9 +51,10 @@ function start(cli) {
 
     game.on("state", socket.emit.bind(socket, "state"));
     game.on("servingChange", socket.emit.bind(socket, "servingChange"));
+    game.on("gameRestart", socket.emit.bind(socket, "gameRestart"));
 
     socket.on("disconnect", () => {
-      logger.info("websocket connection closed");
+      logger.warn("websocket connection closed");
 
       game.emit("cancel");
     });

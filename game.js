@@ -3,20 +3,22 @@ import { getConnectedControllers } from "./controllers.js";
 import { get } from "http";
 import { logger } from "./logger.js";
 
+function createState() {
+  return {
+    score: [0, 0],
+    serving: "player1",
+    gameOver: false,
+    ballNumber: 0,
+    events: [],
+  };
+}
+
 export function createGame(controllers) {
   const gameEmitter = new EventEmitter();
 
   let players = getConnectedControllers();
-  const score = {
-    0: 0,
-    1: 0,
-  };
-  // randomize serving
-  let serving = Math.floor(Math.random() * 2) === 0;
-  let ballNumber = 0;
-  let gameOver = false;
-  let gamePaused = false;
-  const events = [];
+
+  let state = createState();
 
   controllers.on("controllerConnected", (device) => {
     logger.debug("players changed");
@@ -30,13 +32,13 @@ export function createGame(controllers) {
 
   function getState() {
     return {
-      player1: score[0],
-      player2: score[1],
-      serving: serving === 0 ? "player1" : "player2",
-      winner: score[0] > score[1] ? "player1" : "player2",
-      gameOver,
+      player1: state.score[0],
+      player2: state.score[1],
+      serving: state.serving === 0 ? "player1" : "player2",
+      winner: state.score[0] > state.score[1] ? "player1" : "player2",
+      gameOver: state.gameOver,
       gamePaused: players.length < 2,
-      events: events.map((event) => ({
+      events: state.events.map((event) => ({
         type: event.type,
         player: event.player === 0 ? "player1" : "player2",
       })),
@@ -44,25 +46,40 @@ export function createGame(controllers) {
   }
 
   function checkGame() {
-    if (ballNumber % 2 === 0) {
+    if (state.ballNumber % 2 === 0) {
       // change serving using bitwise XOR
-      serving ^= 1;
-      gameEmitter.emit("servingChange", serving === 0 ? "player1" : "player2");
+      state.serving ^= 1;
+      gameEmitter.emit(
+        "servingChange",
+        state.serving === 0 ? "player1" : "player2"
+      );
     }
 
     if (
-      Math.max(score[0], score[1]) >= 11 &&
-      Math.abs(score[0] - score[1]) >= 2
+      Math.max(state.score[0], state.score[1]) >= 11 &&
+      Math.abs(state.score[0] - state.score[1]) >= 2
     ) {
-      gameOver = true;
+      state.gameOver = true;
+      state.events.push({
+        date: new Date(),
+        type: "gameOver",
+        player: state.score[0] > state.score[1] ? 0 : 1,
+      });
     }
 
     gameEmitter.emit("state", getState());
   }
 
   controllers.on("keyPressed", (device) => {
-    if (gameOver) {
-      logger.warn("game is over");
+    if (state.gameOver) {
+      logger.warn("game is over - restarting!");
+
+      gameEmitter.emit("gameRestart");
+
+      state = createState();
+
+      checkGame();
+
       return;
     }
 
@@ -72,21 +89,23 @@ export function createGame(controllers) {
       logger.error("player not found");
     }
 
-    score[player]++;
-    ballNumber++;
+    state.score[player]++;
+    state.ballNumber++;
 
-    events.push({
+    state.events.push({
       date: new Date(),
       type: "score",
       player,
-      score: score[player],
-      ballNumber,
+      score: state.score[player],
+      ballNumber: state.ballNumber,
     });
 
     checkGame();
   });
 
-  gameEmitter.on("cancel", () => {});
+  gameEmitter.on("cancel", () => {
+    controllers.removeAllListeners();
+  });
 
   return { game: gameEmitter, state: getState() };
 }

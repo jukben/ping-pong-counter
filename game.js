@@ -21,6 +21,8 @@ export function createGame(controllers) {
 
   let gamePaused = false;
 
+  const events = [];
+
   controllers.on("controllerConnected", (device) => {
     players = getConnectedControllers();
   });
@@ -37,6 +39,10 @@ export function createGame(controllers) {
       winner: score[0] > score[1] ? "player1" : "player2",
       gameOver,
       gamePaused: players.length < 2,
+      events: events.map((event) => ({
+        type: event.type,
+        player: event.player === 0 ? "player1" : "player2",
+      })),
     };
   }
 
@@ -70,6 +76,14 @@ export function createGame(controllers) {
 
     score[player]++;
     ballNumber++;
+
+    events.push({
+      date: new Date(),
+      type: "score",
+      player,
+      score: score[player],
+      ballNumber,
+    });
 
     checkGame();
   });

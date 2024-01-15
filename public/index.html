@@ -8,6 +8,7 @@
       body {
         padding: 0;
         margin: 0;
+        font-family: Arial, sans-serif;
       }
 
       .score-container {
@@ -20,7 +21,6 @@
       .score-box {
         flex: 1;
         height: 100%;
-        font-family: Arial, sans-serif;
         text-align: center;
         font-size: 22rem;
         display: flex;
@@ -62,12 +62,38 @@
         width: 300px;
         height: 300px;
       }
+
+      .events-log {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      .events-log ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 10px;
+      }
+
+      .events-log li {
+        padding-top: 3px;
+        padding-bottom: 3px;
+      }
+
+      .events-log span {
+        padding-left: 2px;
+        padding-right: 2px;
+        display: inline-block;
+      }
     </style>
   </head>
   <body>
     <div class="score-container" id="game">
       <div class="score-box green" id="player1"><span>0</span></div>
       <div class="score-box blue" id="player2"><span>0</span></div>
+      <div class="events-log" id="events"></div>
     </div>
 
     <script type="module">
@@ -93,7 +119,19 @@
 
         if (state.gameOver) {
           document.getElementById(state.winner).classList.add("won");
-          document.getElementById(state.winner).classList.remove("serving");
+          document.getElementById("player1").classList.remove("serving");
+          document.getElementById("player2").classList.remove("serving");
+        }
+
+        if (state.events.length > 0) {
+          document.getElementById("events").innerHTML = `<ul>${state.events
+            .map((event) => {
+              const color = event.player === "player1" ? "green" : "blue";
+              const name = event.player === "player1" ? "Green" : "Blue";
+              return `<li><span class="${color}">${name}</span> has scored!</li>`;
+            })
+            .reverse()
+            .join("")}</ul>`;
         }
       });
 

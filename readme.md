@@ -9,6 +9,7 @@ Ping Pong Counter is a straightforward application designed to help you keep tra
 - Easily increment the score for either player by clicking on their respective buttons.
 - When one of the players reaches 11 points, the game ends, and you can reset the score to 0-0.
 - The app conveniently keeps track of who's serving.
+- Logs the history of the game, so you can see how the score changed over time.
 
 ## Development
 
@@ -23,7 +24,7 @@ If you prefer to use real controllers, follow these instructions:
 
 ```bash
 npm install
-npm run start`
+npm run start
 ```
 
 Feel free to contribute to the project and improve the ping pong experience!

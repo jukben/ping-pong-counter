@@ -1,33 +1,30 @@
 import { EventEmitter } from "events";
 import { getConnectedControllers } from "./controllers.js";
 import { get } from "http";
+import { logger } from "./logger.js";
 
 export function createGame(controllers) {
   const gameEmitter = new EventEmitter();
 
   let players = getConnectedControllers();
-
   const score = {
     0: 0,
     1: 0,
   };
-
   // randomize serving
   let serving = Math.floor(Math.random() * 2) === 0;
-
   let ballNumber = 0;
-
   let gameOver = false;
-
   let gamePaused = false;
-
   const events = [];
 
   controllers.on("controllerConnected", (device) => {
+    logger.debug("players changed");
     players = getConnectedControllers();
   });
 
   controllers.on("controllerDisconnected", (device) => {
+    logger.debug("players changed");
     players = getConnectedControllers();
   });
 
@@ -65,13 +62,14 @@ export function createGame(controllers) {
 
   controllers.on("keyPressed", (device) => {
     if (gameOver) {
+      logger.warn("game is over");
       return;
     }
 
     const player = players.findIndex((d) => d === device);
 
     if (player === -1) {
-      console.log("this shoudn't happen :)");
+      logger.error("player not found");
     }
 
     score[player]++;

@@ -37,8 +37,8 @@ function start() {
   const io = new Server(httpServer, {
     cors: {
       origin: [
-        `http://localhost:${WS_PORT}`,
-        `http://127.0.0.1:${WS_PORT}`,
+        `http://localhost:${APP_PORT}`,
+        `http://127.0.0.1:${APP_PORT}`,
         "http://localhost:8080",
       ],
     },

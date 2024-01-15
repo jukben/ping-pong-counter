@@ -1,67 +1,40 @@
 import HID from "node-hid";
 import { EventEmitter } from "events";
+import { logger } from "./logger.js";
+import { createEmulatedDevices } from "./emulated-driver.js";
+import { createHamaDevices } from "./hama-driver.js";
 
-let connectedControllers = [];
-const controllersEmitter = new EventEmitter();
-const bufferCounter = {};
+let connectedControllers = new Set();
 
-const CONTROLLERS_BRAND = "hama";
+export function createControllers(dev = false) {
+  const controllersEmitter = new EventEmitter();
 
-// Maybe we should reach for controllers asynchronously?
-function watchForControllers() {
-  if (connectedControllers.length === 2) {
-    return;
-  }
-
-  // get all connected controllers with "hama" in the product name
-  const hamaDevices = [
-    ...new Set(
-      ...[
-        HID.devices()
-          .filter((device) => device.product?.includes(CONTROLLERS_BRAND))
-          .map((device) => device.path),
-      ]
-    ),
-  ];
-
-  hamaDevices.forEach((device) => {
-    if (!connectedControllers.includes(device)) {
-      connectedControllers.push(device);
-      controllersEmitter.emit("controllerConnected", device);
-
-      const hid = new HID.HID(device);
-      hid.on("data", (data) => {
-        bufferCounter[device] = bufferCounter[device] + 1 || 1;
-        if (bufferCounter[device] === 2) {
-          bufferCounter[device] = 0;
-
-          console.log("controller pressed", device);
-          controllersEmitter.emit("keyPressed", device);
-        }
-      });
-
-      hid.on("error", (error) => {
-        connectedControllers = connectedControllers.filter(
-          (controller) => controller !== device
-        );
-        bufferCounter[device] = 0;
-
-        console.log("controller error", error);
-
-        controllersEmitter.emit("controllerDisconnected", device);
-      });
-    }
+  controllersEmitter.on("controllerConnected", (device) => {
+    logger.debug("controller connected", device);
+    connectedControllers.add(device);
   });
-}
 
-export function createControllers() {
-  setInterval(() => {
-    watchForControllers();
-  }, 1000);
+  controllersEmitter.on("controllerDisconnected", (device) => {
+    logger.debug("controller disconnected", device);
+
+    connectedControllers.remove(device);
+  });
+
+  if (dev) {
+    logger.warn("creating emulated controllers (q to quit)");
+    createEmulatedDevices(controllersEmitter);
+  } else {
+    setInterval(() => {
+      if (connectedControllers.size < 2) {
+        logger.info("waiting for Hama controllers");
+        createHamaDevices();
+      }
+    }, 1000);
+  }
 
   return { controllers: controllersEmitter };
 }
 
 export function getConnectedControllers() {
-  return connectedControllers;
+  return [...connectedControllers];
 }

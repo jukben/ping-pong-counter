@@ -41,32 +41,30 @@
         background-color: #7bd3ea;
       }
 
-      .serving::before {
-        content: "";
-        position: absolute;
-        opacity: 0.3;
-        bottom: 0;
-        background-image: url("table_tennis_paddle_and_ball.png");
-        background-size: cover;
-        width: 300px;
-        height: 300px;
-      }
-
+      .serving::before,
       .won::after {
         content: "";
         position: absolute;
-        opacity: 1;
+        opacity: 0.3;
         top: 0;
+        background-size: initial;
+        width: 100%;
+        height: 100%;
+      }
+
+      .serving::before {
+        background-image: url("table_tennis_paddle_and_ball.png");
+      }
+
+      .won::after {
         background-image: url("crown.png");
-        background-size: cover;
-        width: 300px;
-        height: 300px;
       }
 
       .events-log {
         position: absolute;
         left: 0;
         top: 0;
+        font-size: 2rem;
       }
 
       .events-log ul {
@@ -87,6 +85,23 @@
         padding-right: 2px;
         display: inline-block;
       }
+
+      .paused {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        font-size: 8rem;
+        background: white;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .paused.hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -94,6 +109,7 @@
       <div class="score-box green" id="player1"><span>0</span></div>
       <div class="score-box blue" id="player2"><span>0</span></div>
       <div class="events-log" id="events"></div>
+      <div class="paused hidden" id="paused">Waiting for controllers...</div>
     </div>
 
     <script type="module">
@@ -101,8 +117,25 @@
 
       const socket = io.connect("http://localhost:3000");
 
+      socket.on("gameRestart", () => {
+        document.getElementById("player1").classList.remove("serving");
+        document.getElementById("player2").classList.remove("serving");
+        document.getElementById("player1").classList.remove("won");
+        document.getElementById("player2").classList.remove("won");
+
+        document.getElementById("player1").innerHTML = `<span>0</span>`;
+        document.getElementById("player2").innerHTML = `<span>0</span>`;
+        document.getElementById("events").innerHTML = "";
+      });
+
       socket.on("state", (state) => {
         console.log("state", state);
+
+        if (state.gamePaused) {
+          document.getElementById("paused").classList.remove("hidden");
+        } else {
+          document.getElementById("paused").classList.add("hidden");
+        }
 
         if (state.serving === "player2") {
           document.getElementById("player1").classList.remove("serving");
@@ -128,7 +161,12 @@
             .map((event) => {
               const color = event.player === "player1" ? "green" : "blue";
               const name = event.player === "player1" ? "Green" : "Blue";
-              return `<li><span class="${color}">${name}</span> has scored!</li>`;
+
+              if (event.type === "score") {
+                return `<li><span class="${color}">${name}</span> has scored!</li>`;
+              } else if (event.type === "gameOver") {
+                return `<li><span class="${color}"><strong>${name}</strong></span> has won the game!</li>`;
+              }
             })
             .reverse()
             .join("")}</ul>`;

@@ -2,9 +2,9 @@ import { EventEmitter } from "events";
 import { getConnectedControllers } from "./controllers.js";
 import { get } from "http";
 
-const gameEmitter = new EventEmitter();
-
 export function createGame(controllers) {
+  const gameEmitter = new EventEmitter();
+
   let players = getConnectedControllers();
 
   const score = {
@@ -74,9 +74,7 @@ export function createGame(controllers) {
     checkGame();
   });
 
-  gameEmitter.on("cancel", () => {
-    // TODO
-  });
+  gameEmitter.on("cancel", () => {});
 
   return { game: gameEmitter, state: getState() };
 }

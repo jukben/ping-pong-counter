@@ -33,14 +33,13 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3000, () => {
+httpServer.listen(3000, '0.0.0.0', () => {
   console.log("WebSocket server started on port 3000");
 });
 
 // add middleware to serve public files
-app.use(express.static("public"));
+app.use('/', express.static("./public"));
 
-app.listen(5000, async () => {
+app.listen(5000, '0.0.0.0', async () => {
   console.log("server started on port 5000");
-  open("http://localhost:5000");
 });

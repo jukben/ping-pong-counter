@@ -38,7 +38,7 @@ httpServer.listen(3000, '0.0.0.0', () => {
 });
 
 // add middleware to serve public files
-app.use(express.static("public"));
+app.use('/', express.static("./public"));
 
 app.listen(5000, '0.0.0.0', async () => {
   console.log("server started on port 5000");

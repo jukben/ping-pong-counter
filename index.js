@@ -3,43 +3,74 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import open from "open";
+import meow from "meow";
 
 import { createGame } from "./game.js";
+import { createControllers } from "./controllers.js";
 
-const app = express();
+const WS_PORT = 3000;
+const APP_PORT = 5000;
 
-const httpServer = createServer();
+const cli = meow(
+  `
+	Ping Pong Counter 
 
-const io = new Server(httpServer, {
-  cors: {
-    origin: ["http://localhost:5000", "http://localhost:8080"],
-  },
-});
+	Options
+	  --rainbow, -r  Include a rainbow
+`,
+  {
+    importMeta: import.meta,
+    flags: {
+      rainbow: {
+        type: "boolean",
+        shortFlag: "r",
+      },
+    },
+  }
+);
 
-io.on("connection", (socket) => {
-  const { game, state } = createGame();
+function start() {
+  const app = express();
 
-  socket.emit("state", state);
+  const httpServer = createServer();
 
-  game.on("state", (state) => {
+  const io = new Server(httpServer, {
+    cors: {
+      origin: ["http://localhost:5000", "http://localhost:8080"],
+    },
+  });
+
+  const { controllers } = createControllers();
+
+  const controller = io.on("connection", (socket) => {
+    const { game, state } = createGame(controllers);
+
     socket.emit("state", state);
+
+    game.on("state", (state) => {
+      socket.emit("state", state);
+    });
+
+    game.on("servingChange", socket.emit.bind(socket, "servingChange"));
+
+    console.log("WebSocket connection established");
+
+    socket.on("disconnect", () => {
+      console.log("WebSocket connection closed");
+      game.emit("cancel");
+    });
   });
 
-  console.log("WebSocket connection established");
-
-  socket.on("disconnect", () => {
-    console.log("WebSocket connection closed");
-    game.emit("cancel");
+  httpServer.listen(WS_PORT, "0.0.0.0", () => {
+    console.log(`WebSocket server started on port ${WS_PORT}`);
   });
-});
 
-httpServer.listen(3000, '0.0.0.0', () => {
-  console.log("WebSocket server started on port 3000");
-});
+  // add middleware to serve public files
+  app.use("/", express.static("./public"));
 
-// add middleware to serve public files
-app.use('/', express.static("./public"));
+  app.listen(APP_PORT, "0.0.0.0", async () => {
+    console.log(`server started on port ${APP_PORT}`);
+  });
+}
 
-app.listen(5000, '0.0.0.0', async () => {
-  console.log("server started on port 5000");
-});
+start(cli);

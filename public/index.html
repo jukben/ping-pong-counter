@@ -48,7 +48,7 @@
         bottom: 0;
         background-image: url("table_tennis_paddle_and_ball.png");
         background-size: cover;
-        width: 300px; 
+        width: 300px;
         height: 300px;
       }
 
@@ -59,7 +59,7 @@
         top: 0;
         background-image: url("crown.png");
         background-size: cover;
-        width: 300px; 
+        width: 300px;
         height: 300px;
       }
     </style>
@@ -95,6 +95,10 @@
           document.getElementById(state.winner).classList.add("won");
           document.getElementById(state.winner).classList.remove("serving");
         }
+      });
+
+      socket.on("servingChange", (serving) => {
+        console.log("servingChange", serving);
       });
 
       socket.on("disconnect", () => {

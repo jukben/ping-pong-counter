@@ -1,32 +1,42 @@
 import { EventEmitter } from "events";
-import Controllers from "./controllers.js";
+import { getConnectedControllers } from "./controllers.js";
+import { get } from "http";
 
-export function createGame() {
-  const { controllers, devices } = Controllers;
+const gameEmitter = new EventEmitter();
 
-  const gameEmitter = new EventEmitter();
-
-  const [player1, player2] = devices;
+export function createGame(controllers) {
+  let players = getConnectedControllers();
 
   const score = {
-    [player1]: 0,
-    [player2]: 0,
+    0: 0,
+    1: 0,
   };
 
   // randomize serving
-  let serving = Math.floor(Math.random() * 2);
+  let serving = Math.floor(Math.random() * 2) === 0;
 
   let ballNumber = 0;
 
   let gameOver = false;
 
+  let gamePaused = false;
+
+  controllers.on("controllerConnected", (device) => {
+    players = getConnectedControllers();
+  });
+
+  controllers.on("controllerDisconnected", (device) => {
+    players = getConnectedControllers();
+  });
+
   function getState() {
     return {
-      player1: score[player1],
-      player2: score[player2],
-      serving: devices[serving] === player1 ? "player1" : "player2",
-      winner: score[player1] > score[player2] ? "player1" : "player2",
+      player1: score[0],
+      player2: score[1],
+      serving: serving === 0 ? "player1" : "player2",
+      winner: score[0] > score[1] ? "player1" : "player2",
       gameOver,
+      gamePaused: players.length < 2,
     };
   }
 
@@ -34,11 +44,12 @@ export function createGame() {
     if (ballNumber % 2 === 0) {
       // change serving using bitwise XOR
       serving ^= 1;
+      gameEmitter.emit("servingChange", serving === 0 ? "player1" : "player2");
     }
 
     if (
-      Math.max(score[player1], score[player2]) >= 11 &&
-      Math.abs(score[player1] - score[player2]) >= 2
+      Math.max(score[0], score[1]) >= 11 &&
+      Math.abs(score[0] - score[1]) >= 2
     ) {
       gameOver = true;
     }
@@ -51,7 +62,13 @@ export function createGame() {
       return;
     }
 
-    score[device]++;
+    const player = players.findIndex((d) => d === device);
+
+    if (player === -1) {
+      console.log("this shoudn't happen :)");
+    }
+
+    score[player]++;
     ballNumber++;
 
     checkGame();

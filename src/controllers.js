@@ -6,7 +6,7 @@ import { createHamaDevices } from "./drivers/hama-driver.js";
 
 let connectedControllers = new Set();
 
-export function createControllers(dev = false) {
+export function createControllers(dev = false, hidDriver = "hidraw") {
   const controllersEmitter = new EventEmitter();
 
   controllersEmitter.on("controllerConnected", (device) => {
@@ -21,13 +21,11 @@ export function createControllers(dev = false) {
   });
 
   if (dev) {
-    logger.warn("creating emulated controllers (q to quit)");
     createEmulatedDevices(controllersEmitter);
   } else {
     setInterval(() => {
       if (connectedControllers.size < 2) {
-        logger.info("waiting for Hama controllers");
-        createHamaDevices(controllersEmitter);
+        createHamaDevices(controllersEmitter, hidDriver);
       }
     }, 1000);
   }

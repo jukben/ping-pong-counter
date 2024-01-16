@@ -3,7 +3,11 @@ import { logger } from "../logger.js";
 
 const CONTROLLERS_BRAND = "hama";
 
-export function createHamaDevices(controllersEmitter) {
+export function createHamaDevices(controllersEmitter, hidDriver = "hidraw") {
+  logger.info(`waiting for Hama controllers (driver: ${hidDriver})`);
+
+  HID.setDriverType(hidDriver);
+
   // get all connected controllers with "hama" in the product name
   const hamaDevices = [
     ...new Set(

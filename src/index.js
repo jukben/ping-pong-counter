@@ -17,6 +17,7 @@ const cli = meow(
 
 	Options
 	  --dev, -d  Run in development mode
+    --hidDriver, -h  HID driver to use (default: "hidraw", can be "libusb" or "hidraw")
 `,
   {
     importMeta: import.meta,
@@ -24,6 +25,11 @@ const cli = meow(
       dev: {
         type: "boolean",
         shortFlag: "d",
+      },
+      hidDriver: {
+        type: "string",
+        shortFlag: "h",
+        default: "hidraw",
       },
     },
   }
@@ -40,7 +46,7 @@ function start(cli) {
     },
   });
 
-  const { controllers } = createControllers(cli.flags.dev);
+  const { controllers } = createControllers(cli.flags.dev, cli.flags.hidDriver);
 
   const controller = io.on("connection", (socket) => {
     logger.info("websocket connection established");

@@ -1,6 +1,8 @@
 import readline from "readline";
 
 export function createEmulatedDevices(controllersEmitter) {
+  logger.warn("creating emulated controllers (q to quit)");
+
   readline.emitKeypressEvents(process.stdin);
 
   if (process.stdin.isTTY) process.stdin.setRawMode(true);

@@ -67,7 +67,7 @@
         font-size: 2rem;
       }
 
-      .events-log ul {
+      .events-log ul:not(:empty) {
         list-style: none;
         padding: 0;
         margin: 0;
@@ -156,21 +156,19 @@
           document.getElementById("player2").classList.remove("serving");
         }
 
-        if (state.events.length > 0) {
-          document.getElementById("events").innerHTML = `<ul>${state.events
-            .map((event) => {
-              const color = event.player === "player1" ? "green" : "blue";
-              const name = event.player === "player1" ? "Green" : "Blue";
+        document.getElementById("events").innerHTML = `<ul>${state.events
+          .map((event) => {
+            const color = event.player === "player1" ? "green" : "blue";
+            const name = event.player === "player1" ? "Green" : "Blue";
 
-              if (event.type === "score") {
-                return `<li><span class="${color}">${name}</span> has scored!</li>`;
-              } else if (event.type === "gameOver") {
-                return `<li><span class="${color}"><strong>${name}</strong></span> has won the game!</li>`;
-              }
-            })
-            .reverse()
-            .join("")}</ul>`;
-        }
+            if (event.type === "score") {
+              return `<li><span class="${color}">${name}</span> has scored!</li>`;
+            } else if (event.type === "gameOver") {
+              return `<li><span class="${color}"><strong>${name}</strong></span> has won the game!</li>`;
+            }
+          })
+          .reverse()
+          .join("")}</ul>`;
       });
 
       socket.on("servingChange", (serving) => {

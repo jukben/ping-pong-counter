@@ -17,7 +17,7 @@ export function createControllers(dev = false) {
   controllersEmitter.on("controllerDisconnected", (device) => {
     logger.debug("controller disconnected", device);
 
-    connectedControllers.remove(device);
+    connectedControllers.delete(device);
   });
 
   if (dev) {

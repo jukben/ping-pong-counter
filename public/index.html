@@ -115,6 +115,11 @@
     <script type="module">
       import { io } from "https://cdn.socket.io/4.7.3/socket.io.esm.min.js";
 
+      function say(what) {
+        let utterance = new SpeechSynthesisUtterance(what);
+        speechSynthesis.speak(utterance);
+      }
+
       const socket = io.connect("http://localhost:3000");
 
       socket.on("gameRestart", () => {
@@ -173,6 +178,7 @@
 
       socket.on("servingChange", (serving) => {
         console.log("servingChange", serving);
+        say(`${serving} is serving`);
       });
 
       socket.on("disconnect", () => {

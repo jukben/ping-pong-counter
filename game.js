@@ -4,10 +4,12 @@ import { get } from "http";
 import { logger } from "./logger.js";
 import { log } from "console";
 
+// const PLAYER = ["player1", "player2"];
+
 function createState() {
   return {
     score: [0, 0],
-    serving: "player1",
+    serving: 0,
     gameOver: false,
     ballNumber: 0,
     events: [],
@@ -46,20 +48,18 @@ export function createGame(controllers) {
     };
   }
 
-  function checkServing() {
-    if (state.ballNumber % 2 === 0) {
-      // change serving using bitwise XOR
-      state.serving ^= 1;
-      gameEmitter.emit(
-        "servingChange",
-        state.serving === 0 ? "player1" : "player2"
-      );
-    }
+  function changeServing() {
+    logger.debug(`checking serving change for ${state.ballNumber}`);
+    // change serving using bitwise XOR
+    state.serving ^= 1;
+    logger.debug(`serving changed to ${state.serving}`);
+    gameEmitter.emit(
+      "servingChange",
+      state.serving === 0 ? "player1" : "player2"
+    );
   }
 
   function checkGame() {
-    checkServing();
-
     if (
       Math.max(state.score[0], state.score[1]) >= 11 &&
       Math.abs(state.score[0] - state.score[1]) >= 2
@@ -79,6 +79,13 @@ export function createGame(controllers) {
     state.score[player]++;
     state.ballNumber++;
 
+    // in case of deuce, change serving every time
+    if (state.score[0] >= 10 && state.score[1] >= 10) {
+      changeServing();
+    } else if (state.ballNumber % 2 === 0) {
+      changeServing();
+    }
+
     state.events.push({
       date: new Date(),
       type: "score",
@@ -93,7 +100,9 @@ export function createGame(controllers) {
       return;
     }
 
-    checkServing();
+    if (state.ballNumber % 2 === 0 && state.ballNumber - (1 % 2) !== 0) {
+      changeServing();
+    }
 
     state.score[player]--;
     state.ballNumber--;
@@ -147,7 +156,7 @@ export function createGame(controllers) {
       }
 
       if (clicksCounter[player] === 2) {
-        logger.debug(`double press action for ${player}`);
+        logger.debug(`DOUBLE press action for ${player}`);
         doublePressAction(player);
       } else if (clicksCounter[player] === 1) {
         logger.debug(`single press action for ${player}`);

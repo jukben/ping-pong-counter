@@ -11,6 +11,16 @@ Ping Pong Counter is a straightforward application designed to help you keep tra
 - The app conveniently keeps track of who's serving.
 - Logs the history of the game, so you can see how the score changed over time.
 
+## Controls
+
+- single click – increment the score for the respective player
+- double click – decrement the score for the respective player
+
+In case score is 0 - 0:
+
+- double click - change who's serving
+- triple click - change sides
+
 ## Development
 
 To develop this app, you must have Node.js installed on your system. For streamlined development, you can emulate controllers mapped to the "s" and "a" keys. Simply follow these steps:

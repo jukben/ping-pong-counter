@@ -24,12 +24,12 @@ export function createGame(controllers) {
   let state = createState();
 
   controllers.on("controllerConnected", (device) => {
-    logger.debug("players changed");
+    logger.debug("players changed (controllerConnected)");
     players = getConnectedControllers();
   });
 
   controllers.on("controllerDisconnected", (device) => {
-    logger.debug("players changed");
+    logger.debug("players changed (controllerDisconnected)");
     players = getConnectedControllers();
   });
 
@@ -75,6 +75,13 @@ export function createGame(controllers) {
     gameEmitter.emit("state", getState());
   }
 
+  function triplePressAction(player) {
+    if (state.score[0] === 0 && state.score[1] === 0) {
+      logger.warn("switching sides");
+      players.reverse();
+    }
+  }
+
   function singlePressAction(player) {
     state.score[player]++;
     state.ballNumber++;
@@ -96,6 +103,11 @@ export function createGame(controllers) {
   }
 
   function doublePressAction(player) {
+    if (state.score[0] === 0 && state.score[1] === 0) {
+      logger.warn("switching who's serving");
+      state.serving ^= 1;
+    }
+
     if (state.score[player] <= 0) {
       return;
     }
@@ -155,7 +167,10 @@ export function createGame(controllers) {
         return;
       }
 
-      if (clicksCounter[player] === 2) {
+      if (clicksCounter[player] === 3) {
+        logger.debug(`TIPPLE press action for ${player}`);
+        triplePressAction(player);
+      } else if (clicksCounter[player] === 2) {
         logger.debug(`DOUBLE press action for ${player}`);
         doublePressAction(player);
       } else if (clicksCounter[player] === 1) {

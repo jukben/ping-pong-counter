@@ -32,7 +32,7 @@ export function createHamaDevices(controllersEmitter) {
     });
 
     hid.on("error", (error) => {
-      logger.error("controller error", device);
+      logger.error(`controller (${device}) error`);
 
       controllersEmitter.emit("controllerDisconnected", device);
 

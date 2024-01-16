@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js --dev"
+    "start": "node src/index.js",
+    "dev": "node src/index.js --dev"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -4,7 +4,7 @@ import { get } from "http";
 import { logger } from "./logger.js";
 import { log } from "console";
 
-// const PLAYER = ["player1", "player2"];
+const PLAYER = ["player1", "player2"];
 
 function createState() {
   return {
@@ -37,13 +37,13 @@ export function createGame(controllers) {
     return {
       player1: state.score[0],
       player2: state.score[1],
-      serving: state.serving === 0 ? "player1" : "player2",
-      winner: state.score[0] > state.score[1] ? "player1" : "player2",
+      serving: PLAYER[state.serving],
+      winner: state.score[0] > state.score[1] ? PLAYER[0] : PLAYER[1],
       gameOver: state.gameOver,
       gamePaused: players.length < 2,
       events: state.events.map((event) => ({
         type: event.type,
-        player: event.player === 0 ? "player1" : "player2",
+        player: PLAYER[event.player],
       })),
     };
   }
@@ -53,10 +53,7 @@ export function createGame(controllers) {
     // change serving using bitwise XOR
     state.serving ^= 1;
     logger.debug(`serving changed to ${state.serving}`);
-    gameEmitter.emit(
-      "servingChange",
-      state.serving === 0 ? "player1" : "player2"
-    );
+    gameEmitter.emit("servingChange", PLAYER[state.serving === 0]);
   }
 
   function checkGame() {

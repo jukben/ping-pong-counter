@@ -1,8 +1,8 @@
 import HID from "node-hid";
 import { EventEmitter } from "events";
 import { logger } from "./logger.js";
-import { createEmulatedDevices } from "./emulated-driver.js";
-import { createHamaDevices } from "./hama-driver.js";
+import { createEmulatedDevices } from "./drivers/emulated-driver.js";
+import { createHamaDevices } from "./drivers/hama-driver.js";
 
 let connectedControllers = new Set();
 

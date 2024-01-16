@@ -102,6 +102,28 @@
       .paused.hidden {
         display: none;
       }
+
+      .flash {
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        position: absolute;
+        z-index: 1;
+        opacity: 0;
+      }
+
+      .flash.flash-active {
+        animation: flashAnimation 0.3s ease-in-out;
+      }
+
+      @keyframes flashAnimation {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
     </style>
   </head>
   <body>
@@ -110,6 +132,7 @@
       <div class="score-box blue" id="player2"><span>0</span></div>
       <div class="events-log" id="events"></div>
       <div class="paused hidden" id="paused">Waiting for controllers...</div>
+      <div class="flash" id="flash" />
     </div>
 
     <script type="module">
@@ -179,6 +202,14 @@
       socket.on("servingChange", (serving) => {
         console.log("servingChange", serving);
         say(`${serving} is serving`);
+      });
+
+      socket.on("keyPressed", (device) => {
+        console.log("keyPressed", device);
+        document.getElementById("flash").classList.add("flash-active");
+        setTimeout(() => {
+          document.getElementById("flash").classList.remove("flash-active");
+        }, 300);
       });
 
       socket.on("disconnect", () => {

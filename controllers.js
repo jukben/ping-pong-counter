@@ -27,7 +27,7 @@ export function createControllers(dev = false) {
     setInterval(() => {
       if (connectedControllers.size < 2) {
         logger.info("waiting for Hama controllers");
-        createHamaDevices();
+        createHamaDevices(controllersEmitter);
       }
     }, 1000);
   }

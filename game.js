@@ -46,7 +46,7 @@ export function createGame(controllers) {
     };
   }
 
-  function checkGame() {
+  function checkServing() {
     if (state.ballNumber % 2 === 0) {
       // change serving using bitwise XOR
       state.serving ^= 1;
@@ -55,6 +55,10 @@ export function createGame(controllers) {
         state.serving === 0 ? "player1" : "player2"
       );
     }
+  }
+
+  function checkGame() {
+    checkServing();
 
     if (
       Math.max(state.score[0], state.score[1]) >= 11 &&
@@ -89,7 +93,7 @@ export function createGame(controllers) {
       return;
     }
 
-    // TODO Fix switching serving player
+    checkServing();
 
     state.score[player]--;
     state.ballNumber--;

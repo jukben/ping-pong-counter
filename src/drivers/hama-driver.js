@@ -3,24 +3,35 @@ import { logger } from "../logger.js";
 
 const CONTROLLERS_BRAND = "hama";
 
-export function createHamaDevices(controllersEmitter, hidDriver = "hidraw") {
-  logger.info(`waiting for Hama controllers (driver: ${hidDriver})`);
+async function getHamaDevices() {
+  const devices = await HID.devicesAsync();
 
-  HID.setDriverType(hidDriver);
-
-  // get all connected controllers with "hama" in the product name
-  const hamaDevices = [
+  console.log(devices);
+  return [
     ...new Set(
       ...[
-        HID.devices()
+        devices
           .filter((device) => device.product?.includes(CONTROLLERS_BRAND))
           .map((device) => device.path),
       ]
     ),
   ];
+}
 
-  hamaDevices.forEach((device) => {
-    const hid = new HID.HID(device);
+export async function createHamaDevices(
+  controllersEmitter,
+  hidDriver = "hidraw"
+) {
+  logger.info(`waiting for Hama controllers (driver: ${hidDriver})`);
+
+  HID.setDriverType(hidDriver);
+  HID.setNonBlocking(true);
+
+  const hamaDevices = await getHamaDevices();
+
+  hamaDevices.forEach(async (device) => {
+    const hid = await HID.HIDAsync.open(device);
+
     controllersEmitter.emit("controllerConnected", device);
 
     let bufferCounter = 0;
@@ -38,6 +49,7 @@ export function createHamaDevices(controllersEmitter, hidDriver = "hidraw") {
     hid.on("error", (error) => {
       logger.error(`controller (${device}) error`);
 
+      hid.close();
       controllersEmitter.emit("controllerDisconnected", device);
 
       bufferCounter = 0;

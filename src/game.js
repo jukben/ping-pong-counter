@@ -6,13 +6,14 @@ import { log } from "console";
 
 const PLAYER = ["player1", "player2"];
 
-function createState() {
+function createState(overrides = {}) {
   return {
     score: [0, 0],
     serving: 0,
     gameOver: false,
     ballNumber: 0,
     events: [],
+    ...overrides,
   };
 }
 
@@ -119,11 +120,13 @@ export function createGame(controllers) {
   function gameOverAction() {
     logger.warn("game is over - restarting!");
     gameEmitter.emit("gameRestart");
-    gameEmitter.emit("gameRestart");
 
-    gameEmitter.emit("gameRestart");
+    // make the loser serve
+    const playerServing = state.score[0] > state.score[1] ? 1 : 0;
 
-    state = createState();
+    state = createState({
+      serving: playerServing,
+    });
   }
 
   const clicksCounter = [0, 0];

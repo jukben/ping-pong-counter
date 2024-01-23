@@ -48,7 +48,7 @@ function start(cli) {
 
   const { controllers } = createControllers(cli.flags.dev, cli.flags.hidDriver);
 
-  const controller = io.on("connection", (socket) => {
+  io.on("connection", (socket) => {
     logger.info("websocket connection established");
 
     const { game, state } = createGame(controllers);
@@ -64,6 +64,7 @@ function start(cli) {
       logger.warn("websocket connection closed");
 
       game.emit("cancel");
+      game.removeAllListeners();
     });
   });
 

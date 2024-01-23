@@ -1,4 +1,5 @@
 import readline from "readline";
+import { logger } from "../logger.js";
 
 export function createEmulatedDevices(controllersEmitter) {
   logger.warn("creating emulated controllers (q to quit)");

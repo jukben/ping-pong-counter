@@ -10,12 +10,13 @@ export function createControllers(dev = false, hidDriver = "hidraw") {
   const controllersEmitter = new EventEmitter();
 
   controllersEmitter.on("controllerConnected", (device) => {
-    logger.debug("controller connected", device);
+    logger.debug(`controller (${device}) connected`);
+
     connectedControllers.add(device);
   });
 
   controllersEmitter.on("controllerDisconnected", (device) => {
-    logger.debug("controller disconnected", device);
+    logger.debug(`controller (${device}) disconnected`);
 
     connectedControllers.delete(device);
   });

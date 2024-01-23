@@ -23,16 +23,6 @@ export function createGame(controllers) {
 
   let state = createState();
 
-  controllers.on("controllerConnected", (device) => {
-    logger.debug("players changed (controllerConnected)");
-    players = getConnectedControllers();
-  });
-
-  controllers.on("controllerDisconnected", (device) => {
-    logger.debug("players changed (controllerDisconnected)");
-    players = getConnectedControllers();
-  });
-
   function getState() {
     return {
       player1: state.score[0],
@@ -49,11 +39,11 @@ export function createGame(controllers) {
   }
 
   function changeServing() {
-    logger.debug(`checking serving change for ${state.ballNumber}`);
+    logger.debug(`checking serving change for ball no. ${state.ballNumber}`);
     // change serving using bitwise XOR
     state.serving ^= 1;
     logger.debug(`serving changed to ${state.serving}`);
-    gameEmitter.emit("servingChange", PLAYER[state.serving === 0]);
+    gameEmitter.emit("servingChange", PLAYER[state.serving]);
   }
 
   function checkGame() {
@@ -139,7 +129,7 @@ export function createGame(controllers) {
   const clicksCounter = [0, 0];
   let timeoutRefs = [null, null];
 
-  controllers.on("keyPressed", (device) => {
+  function handleKeyPressed(device) {
     if (state.gameOver) {
       gameOverAction();
       checkGame();
@@ -165,23 +155,48 @@ export function createGame(controllers) {
       }
 
       if (clicksCounter[player] === 3) {
-        logger.debug(`TIPPLE press action for ${player}`);
+        logger.debug(`triple press action for ${PLAYER[player]}`);
         triplePressAction(player);
       } else if (clicksCounter[player] === 2) {
-        logger.debug(`DOUBLE press action for ${player}`);
+        logger.debug(`double press action for ${PLAYER[player]}`);
         doublePressAction(player);
       } else if (clicksCounter[player] === 1) {
-        logger.debug(`single press action for ${player}`);
+        logger.debug(`single press action for ${PLAYER[player]}`);
         singlePressAction(player);
       }
 
       clicksCounter[player] = 0;
       checkGame();
     }, 500);
-  });
+  }
+
+  function handleControllerConnected(device) {
+    logger.debug(`controller (${device}) connected`);
+    players = getConnectedControllers();
+  }
+
+  function handleControllerDisconnected(device) {
+    logger.debug(`controller (${device}) disconnected`);
+    players = getConnectedControllers();
+  }
+
+  controllers.on("controllerConnected", handleControllerConnected);
+  controllers.on("controllerDisconnected", handleControllerDisconnected);
+  controllers.on("keyPressed", handleKeyPressed);
 
   gameEmitter.on("cancel", () => {
-    controllers.removeAllListeners();
+    logger.warn("game cancelled, removing listener and flagging game as over");
+    state.gameOver = true;
+
+    controllers.removeListener("keyPressed", handleKeyPressed);
+    controllers.removeListener(
+      "controllerConnected",
+      handleControllerConnected
+    );
+    controllers.removeListener(
+      "controllerDisconnected",
+      handleControllerDisconnected
+    );
   });
 
   return { game: gameEmitter, state: getState() };

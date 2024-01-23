@@ -22,7 +22,7 @@
         flex: 1;
         height: 100%;
         text-align: center;
-        font-size: 22rem;
+        font-size: 26rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -45,9 +45,10 @@
       .won::after {
         content: "";
         position: absolute;
-        opacity: 0.3;
+        opacity: 0.4;
         top: 0;
         background-size: initial;
+        background-repeat: repeat;
         width: 100%;
         height: 100%;
       }
@@ -58,6 +59,8 @@
 
       .won::after {
         background-image: url("crown.png");
+        opacity: 0.8;
+        animation: animatedBackground 10s linear infinite alternate;
       }
 
       .events-log {
@@ -124,6 +127,15 @@
           opacity: 0;
         }
       }
+
+      @keyframes animatedBackground {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 100% 0;
+        }
+      }
     </style>
   </head>
   <body>
@@ -138,6 +150,11 @@
     <script type="module">
       import { io } from "https://cdn.socket.io/4.7.3/socket.io.esm.min.js";
 
+      const FRIENDLY_NAMES = {
+        player1: "Green",
+        player2: "Blue",
+      };
+
       function say(what) {
         let utterance = new SpeechSynthesisUtterance(what);
         speechSynthesis.speak(utterance);
@@ -145,7 +162,7 @@
 
       const socket = io.connect("http://localhost:3000");
 
-      socket.on("gameRestart", () => {
+      function handleInitialUI() {
         document.getElementById("player1").classList.remove("serving");
         document.getElementById("player2").classList.remove("serving");
         document.getElementById("player1").classList.remove("won");
@@ -154,9 +171,12 @@
         document.getElementById("player1").innerHTML = `<span>0</span>`;
         document.getElementById("player2").innerHTML = `<span>0</span>`;
         document.getElementById("events").innerHTML = "";
-      });
+      }
+
+      socket.on("gameRestart", handleInitialUI);
 
       socket.on("state", (state) => {
+        say(`It's ${state.player1} to ${state.player2}`);
         console.log("state", state);
 
         if (state.gamePaused) {
@@ -179,6 +199,9 @@
           `<span>${state.player2}</span>`;
 
         if (state.gameOver) {
+          const name = event.player === "player1" ? "Green" : "Blue";
+          say(`${name} won the game! Congratulations!`);
+
           document.getElementById(state.winner).classList.add("won");
           document.getElementById("player1").classList.remove("serving");
           document.getElementById("player2").classList.remove("serving");
@@ -187,12 +210,17 @@
         document.getElementById("events").innerHTML = `<ul>${state.events
           .map((event) => {
             const color = event.player === "player1" ? "green" : "blue";
-            const name = event.player === "player1" ? "Green" : "Blue";
 
             if (event.type === "score") {
-              return `<li><span class="${color}">${name}</span> has scored!</li>`;
+              return `<li><span class="${FRIENDLY_NAMES[
+                event.player
+              ].toLowerCase()}">${
+                FRIENDLY_NAMES[event.player]
+              }</span> has scored!</li>`;
             } else if (event.type === "gameOver") {
-              return `<li><span class="${color}"><strong>${name}</strong></span> has won the game!</li>`;
+              return `<li><span class="${color}"><strong>${
+                FRIENDLY_NAMES[event.player]
+              }</strong></span> has won the game!</li>`;
             }
           })
           .reverse()
@@ -201,7 +229,8 @@
 
       socket.on("servingChange", (serving) => {
         console.log("servingChange", serving);
-        say(`${serving} is serving`);
+
+        say(`${FRIENDLY_NAMES[serving]} is serving`);
       });
 
       socket.on("keyPressed", (device) => {
@@ -215,6 +244,8 @@
       socket.on("disconnect", () => {
         console.log("Disconnected from the server");
       });
+
+      socket.on("connect", handleInitialUI);
     </script>
   </body>
 </html>

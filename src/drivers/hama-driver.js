@@ -28,7 +28,7 @@ export function createHamaDevices(controllersEmitter, hidDriver = "hidraw") {
     hid.on("data", (data) => {
       bufferCounter++;
       if (bufferCounter === 2) {
-        logger.debug("controller pressed", device);
+        logger.debug(`controller (${device}) pressed`);
         controllersEmitter.emit("keyPressed", device);
 
         bufferCounter = 0;

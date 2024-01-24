@@ -1,10 +1,12 @@
 import HID from "node-hid";
 import { EventEmitter } from "events";
-import { logger } from "./logger.js";
+import { createLogger } from "./logger.js";
 import { createEmulatedDevices } from "./drivers/emulated-driver.js";
 import { createHamaDevices } from "./drivers/hama-driver.js";
 
 let connectedControllers = new Set();
+
+const logger = createLogger({ tag: "controllers" });
 
 export function createControllers(dev = false, hidDriver = "hidraw") {
   const controllersEmitter = new EventEmitter();

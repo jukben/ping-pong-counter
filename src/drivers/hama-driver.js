@@ -1,12 +1,15 @@
 import HID from "node-hid";
-import { logger } from "../logger.js";
+import { createLogger } from "../logger.js";
 
 const CONTROLLERS_BRAND = "hama";
+
+const logger = createLogger({ tag: "hama-driver" });
 
 async function getHamaDevices() {
   const devices = await HID.devicesAsync();
 
-  console.log(devices);
+  logger.info({ devices }, "found devices");
+
   return [
     ...new Set(
       ...[

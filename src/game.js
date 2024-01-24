@@ -1,8 +1,10 @@
 import { EventEmitter } from "events";
 import { getConnectedControllers } from "./controllers.js";
 import { get } from "http";
-import { logger } from "./logger.js";
+import { createLogger } from "./logger.js";
 import { log } from "console";
+
+const logger = createLogger({ tag: "game" });
 
 const PLAYER = ["player1", "player2"];
 

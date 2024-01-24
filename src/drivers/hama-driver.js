@@ -8,17 +8,13 @@ const logger = createLogger({ tag: "hama-driver" });
 async function getHamaDevices() {
   const devices = await HID.devicesAsync();
 
-  const hamaDevices = [
-    ...new Set(
-      ...[
-        devices.filter((device) => device.product?.includes(CONTROLLERS_BRAND)),
-      ]
-    ),
-  ];
+  const hamaDevices = devices.filter((device) =>
+    device.product?.includes(CONTROLLERS_BRAND)
+  );
 
-  logger.info({ hamaDevices }, "found devices");
+  logger.info({ hamaDevices }, "found devices (duplicates yet not removed)");
 
-  return hamaDevices.map((device) => device.path);
+  return [...new Set(...[hamaDevices.map((device) => device.path)])];
 }
 
 export async function createHamaDevices(

@@ -28,7 +28,7 @@ export async function createHamaDevices(
   logger.info(`waiting for Hama controllers (driver: ${hidDriver})`);
 
   HID.setDriverType(hidDriver);
-  HID.setNonBlocking(true);
+  // HID.setNonBlocking(true);
 
   const hamaDevices = await getHamaDevices();
 

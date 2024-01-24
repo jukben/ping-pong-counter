@@ -8,8 +8,6 @@ const logger = createLogger({ tag: "hama-driver" });
 async function getHamaDevices() {
   const devices = await HID.devicesAsync();
 
-  logger.info({ devices }, "found devices");
-
   const hamaDevices = [
     ...new Set(
       ...[

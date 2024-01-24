@@ -10,15 +10,17 @@ async function getHamaDevices() {
 
   logger.info({ devices }, "found devices");
 
-  return [
+  const hamaDevices = [
     ...new Set(
       ...[
-        devices
-          .filter((device) => device.product?.includes(CONTROLLERS_BRAND))
-          .map((device) => device.path),
+        devices.filter((device) => device.product?.includes(CONTROLLERS_BRAND)),
       ]
     ),
   ];
+
+  logger.info({ hamaDevices }, "found devices");
+
+  return hamaDevices.map((device) => device.path);
 }
 
 export async function createHamaDevices(

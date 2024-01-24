@@ -4,6 +4,7 @@ import { createLogger } from "../logger.js";
 const CONTROLLERS_BRAND = "hama";
 
 const logger = createLogger({ tag: "hama-driver" });
+const openHamaDevices = new Set();
 
 async function getHamaDevices() {
   const devices = await HID.devicesAsync();
@@ -26,11 +27,13 @@ export async function createHamaDevices(
   HID.setDriverType(hidDriver);
   // HID.setNonBlocking(true);
 
-  const hamaDevices = await getHamaDevices();
+  const hamaDevices = (await getHamaDevices()).filter(
+    (device) => !openHamaDevices.has(device)
+  );
 
   hamaDevices.forEach(async (device) => {
     const hid = await HID.HIDAsync.open(device);
-
+    openHamaDevices.add(device);
     controllersEmitter.emit("controllerConnected", device);
 
     let bufferCounter = 0;
@@ -48,6 +51,7 @@ export async function createHamaDevices(
     hid.on("error", (error) => {
       logger.error(`controller (${device}) error`);
 
+      openHamaDevices.delete(device);
       hid.close();
       controllersEmitter.emit("controllerDisconnected", device);
 

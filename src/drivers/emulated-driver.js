@@ -1,5 +1,7 @@
 import readline from "readline";
-import { logger } from "../logger.js";
+import { createLogger } from "../logger.js";
+
+const logger = createLogger({ tag: "emulated-driver" });
 
 export function createEmulatedDevices(controllersEmitter) {
   logger.warn("creating emulated controllers (q to quit)");

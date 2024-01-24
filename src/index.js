@@ -6,7 +6,9 @@ import meow from "meow";
 
 import { createGame } from "./game.js";
 import { createControllers } from "./controllers.js";
-import { logger } from "./logger.js";
+import { createLogger } from "./logger.js";
+
+const logger = createLogger({ tag: "index" });
 
 const WS_PORT = 3000;
 const APP_PORT = 5000;

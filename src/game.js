@@ -178,11 +178,15 @@ export function createGame(controllers) {
   function handleControllerConnected(device) {
     logger.debug(`controller (${device}) connected`);
     players = getConnectedControllers();
+
+    gameEmitter.emit("state", getState());
   }
 
   function handleControllerDisconnected(device) {
     logger.debug(`controller (${device}) disconnected`);
     players = getConnectedControllers();
+
+    gameEmitter.emit("state", getState());
   }
 
   controllers.on("controllerConnected", handleControllerConnected);

@@ -72,7 +72,6 @@
 
       .events-log ul:not(:empty) {
         list-style: none;
-        padding: 0;
         margin: 0;
         background: rgba(0, 0, 0, 0.2);
         padding: 10px;
@@ -90,15 +89,21 @@
       }
 
       .paused {
+        margin: 0;
+        padding: 0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+
         position: absolute;
         height: 100%;
         width: 100%;
-        font-size: 8rem;
+        font-size: 5rem;
         background: white;
         z-index: 1;
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-direction: column;
         text-align: center;
       }
 
@@ -136,6 +141,67 @@
           background-position: 100% 0;
         }
       }
+
+      h1 {
+        font-size: 2.5em;
+        color: #FB8500;
+        text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+      }
+      p {
+        font-size: 1.2em;
+        color: #333;
+      }
+      .instruction {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #ffeb3b;
+        border-radius: 5px;
+        color: #000;
+        font-weight: bold;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 0.9em;
+        color: #000;
+      }
+
+      .welcome-container {
+        z-index: 1;
+      }
+      .animation-container {
+        position: absolute;
+        top: 0;
+        lefT: 0;
+        bottom: 0;
+        right: 0;
+        background-color: #ffffaaee;
+        border: 2px solid #887c00;
+        overflow: hidden;
+      }
+      .ball {
+        width: 100px;
+        height: 100px;
+        background-color: #ffac00;
+        border-radius: 50%;
+        position: absolute;
+      }
+      .bat {
+        width: 20px;
+        height: 280px;
+        background-color: #333;
+        position: absolute;
+        border-radius: 10px;
+      }
+      .bat-left {
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .bat-right {
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
     </style>
   </head>
   <body>
@@ -143,7 +209,55 @@
       <div class="score-box green" id="player1"><span>0</span></div>
       <div class="score-box blue" id="player2"><span>0</span></div>
       <div class="events-log" id="events"></div>
-      <div class="paused hidden" id="paused">Waiting for controllers...</div>
+      <div class="paused hidden" id="paused">
+        <div class="animation-container" id="animationContainer">
+          <div class="ball" id="ball"></div>
+          <div class="bat bat-left"></div>
+          <div class="bat bat-right"></div>
+        </div>
+        <div class="welcome-container">
+          <h1>Let's play<br/>Ping-Pong!</h1>
+          <div class="instruction">
+            Hold the clicker for 3 seconds to start
+          </div>
+          <div class="footer">
+            Happy Playing!
+          </div>
+        </div>
+        <script type="application/ecmascript">
+          const ball = document.getElementById('ball');
+          const container = document.getElementById('animationContainer');
+
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+          const ballDiameter = ball.clientWidth;
+
+          let ballPosX = Math.random() * (containerWidth - ballDiameter);
+          let ballPosY = Math.random() * (containerHeight - ballDiameter);
+
+          let ballSpeedX = 10;
+          let ballSpeedY = 5;
+
+          function animateBall() {
+            ballPosX += ballSpeedX;
+            ballPosY += ballSpeedY;
+
+            if (ballPosX <= 0 || ballPosX >= container.clientWidth - ball.clientWidth) {
+              ballSpeedX = -ballSpeedX;
+            }
+            if (ballPosY <= 0 || ballPosY >= container.clientHeight - ball.clientHeight) {
+              ballSpeedY = -ballSpeedY;
+            }
+
+            ball.style.left = ballPosX + 'px';
+            ball.style.top = ballPosY + 'px';
+
+            requestAnimationFrame(animateBall);
+          }
+
+          animateBall();
+        </script>
+      </div>
       <div class="flash" id="flash" />
     </div>
 
